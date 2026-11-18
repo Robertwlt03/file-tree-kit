@@ -1,0 +1,7 @@
+{"kind": "grid", "columns": 3, "items": [
+  {"glyph": "bolt", "title": "Fast walk", "text": "fts(3) without changing folders, on one volume, nothing allocated per file."},
+  {"glyph": "folders", "title": "Leave folders out", "text": "Skip caches, build folders or anything else with everything inside."},
+  {"glyph": "overview", "title": "Sizes like du", "text": "The bytes a file or folder really takes on disk."},
+  {"glyph": "duplicates", "title": "Duplicates", "text": "Equal size, first megabyte, full read: very few files are read whole."},
+  {"glyph": "clock", "title": "Cancelable", "text": "The search reads in the background and stops when its task is canceled."},
+  {"glyph": "shield", "title": "No dependencies", "text": "Foundation and CryptoKit, Swift 6 with strict concurrency."}]}

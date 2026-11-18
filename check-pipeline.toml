@@ -1,0 +1,25 @@
+# The checks of file-tree-kit, with check-pipeline; CI runs the same ones on a Mac.
+name = "file-tree-kit"
+steps = [
+    "build", "tests", "ios", "format", "lint", "nesting", "duplicates", "secrets",
+    "security", "guides", "files", "english", "language", "commits",
+]
+
+[language]
+terms = ["macos", "ios", "fts", "apfs", "du", "cryptokit", "deinit"]
+
+[commands.format]
+title = "Formatting (swift format)"
+command = ["swift", "format", "lint", "--strict", "--recursive", "Sources", "Tests", "Package.swift"]
+
+[commands.lint]
+title = "Length, nesting and complexity (SwiftLint)"
+command = ["swiftlint", "lint", "--quiet", "--strict"]
+
+# The package promises iOS too, so it is built for iOS as well.
+[commands.ios]
+title = "Builds for iOS (xcodebuild)"
+command = [
+    "xcodebuild", "-scheme", "FileTreeKit", "-destination", "generic/platform=iOS",
+    "-derivedDataPath", ".build/ios", "build", "-quiet",
+]

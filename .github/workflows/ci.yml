@@ -1,0 +1,70 @@
+# Runs every check of file-tree-kit on a Mac with check-pipeline: build, tests, format,
+# SwiftLint and the rest, and makes sure the README's pictures match their descriptions.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# The jobs only read the code; GitHub's token gets no right to change anything.
+permissions:
+  contents: read
+
+# A newer push replaces the run of an older one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Actions are pinned to a commit, which nobody can move; Dependabot proposes newer ones.
+jobs:
+  checks:
+    name: Build, tests and checks
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0  # the commits step compares with the base branch
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: Install check-pipeline
+        run: python -m pip install "git+https://github.com/Robertwlt03/check-pipeline@v0.1.0"
+      # A fixed SwiftLint, so a new release never turns unchanged code red. The download must
+      # match the checksum GitHub shows for the release, or the job stops here.
+      - name: Install SwiftLint
+        env:
+          SWIFTLINT_RELEASES: https://github.com/realm/SwiftLint/releases/download
+          SWIFTLINT_VERSION: 0.65.1
+          SWIFTLINT_CHECKSUM: c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0
+        run: |
+          archive="$RUNNER_TEMP/swiftlint.zip"
+          curl --fail --silent --show-error --location --output "$archive" \
+            "$SWIFTLINT_RELEASES/$SWIFTLINT_VERSION/portable_swiftlint.zip"
+          echo "$SWIFTLINT_CHECKSUM  $archive" | shasum --algorithm 256 --check
+          unzip -q "$archive" -d "$RUNNER_TEMP/swiftlint"
+          echo "$RUNNER_TEMP/swiftlint" >> "$GITHUB_PATH"
+      - name: check-pipeline
+        run: check-pipeline
+
+  pictures:
+    name: Pictures are current
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: Install markdown-graphics
+        run: python -m pip install "git+https://github.com/Robertwlt03/markdown-graphics@v0.1.0"
+      # git status also sees pictures that were never committed, which git diff would miss.
+      - name: Draw and compare
+        run: |
+          markdown-graphics pictures
+          git status --porcelain -- assets/pictures
+          test -z "$(git status --porcelain -- assets/pictures)"

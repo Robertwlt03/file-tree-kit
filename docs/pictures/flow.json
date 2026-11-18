@@ -1,0 +1,4 @@
+{"kind": "flow", "items": [
+  {"glyph": "folders", "title": "Same size", "text": "Only files of equal size can be duplicates; the walk already knows every size."},
+  {"glyph": "search", "title": "First megabyte", "text": "A hash of the first megabyte splits most groups apart."},
+  {"glyph": "duplicates", "title": "Full read", "text": "Only what is still together is read in full and hashed."}]}
